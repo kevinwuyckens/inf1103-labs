@@ -5,6 +5,12 @@ def inventory_function():
     units_unprocessed = 0
     max_inventory = 500
 
+    # print info function when loop breaks
+    def print_info():
+        print(f"Units Processed: {inventory}")
+        print(f"Failed Entries: {failed_entries}")
+        print(f"Units Unprocessed: {units_unprocessed}")
+
     while True:
             # ask for input
             response = input(f"Current inventory: {inventory}. Please enter your stock quantity to add to the inventory: ").lower().strip()
@@ -38,5 +44,6 @@ def inventory_function():
                 else:
                     print("Invalid input. Please enter a valid, non-negative integer.")
                 failed_entries += 1
+    print_info()
 
 inventory_function()
