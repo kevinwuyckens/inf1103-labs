@@ -28,3 +28,15 @@ def inventory_function():
                     failed_entries += 1 # considered failed entry since not all units were added successfully
                     print(f"ALERT: Maximum {max_inventory} units in inventory exceeded. Stopping...")
                 break
+
+            # invalid inputs
+            else:
+                # negative numbers
+                if response.startswith("-") and response[1:].isdigit():
+                    print("Invalid input. Negative stock quantity not allowed.")
+                # everything else
+                else:
+                    print("Invalid input. Please enter a valid, non-negative integer.")
+                failed_entries += 1
+
+inventory_function()
