@@ -53,3 +53,31 @@ def generate_report(total_units, total_failed_entries, units_unprocessed):
     print(f"Total units in inventory: {total_units}")
     print(f"Failed entries: {total_failed_entries}")
     print(f"Units unprocessed: {units_unprocessed}")
+
+def main():
+    '''Runs the inventory auditor loop until the user quits or the inventory limit is exceeded'''
+    current_total = 0
+    total_failed_entries = 0
+    units_unprocessed = 0
+    max_inventory = 500
+
+    while True:
+        new_value, failed_entries = get_valid_input()   
+        total_failed_entries += failed_entries
+
+        if new_value == "quit":
+            break
+
+        current_total, units_unprocessed = process_delivery(current_total, new_value, max_inventory)
+
+        if units_unprocessed > 0:
+            total_failed_entries += 1
+            print(f"ALERT: Maximum {max_inventory} units in inventory exceeded. Stopping...")
+            break
+
+        tax = calculate_tax(new_value)                              
+        print(f"Delivery added: {new_value} units | Tax: {tax} | Running total: {current_total}")
+
+    generate_report(current_total, total_failed_entries, units_unprocessed)
+
+main()
