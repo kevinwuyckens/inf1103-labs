@@ -43,3 +43,7 @@ def process_delivery(current_total, new_value, max_inventory):
         current_total = max_inventory
 
     return current_total, units_unprocessed
+
+def calculate_tax(amount, tax_rate=0.1):
+    '''Returns the tax on a delivery amount at the given tax rate'''
+    return amount * tax_rate
