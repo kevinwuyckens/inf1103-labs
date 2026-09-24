@@ -47,3 +47,9 @@ def process_delivery(current_total, new_value, max_inventory):
 def calculate_tax(amount, tax_rate=0.1):
     '''Returns the tax on a delivery amount at the given tax rate'''
     return amount * tax_rate
+
+def generate_report(total_units, total_failed_entries, units_unprocessed):
+    '''Prints the final inventory summary'''
+    print(f"Total units in inventory: {total_units}")
+    print(f"Failed entries: {total_failed_entries}")
+    print(f"Units unprocessed: {units_unprocessed}")
