@@ -28,3 +28,18 @@ def get_valid_input():
 
             # increment failed entries for tracking
             failed_entries += 1
+
+def process_delivery(current_total, new_value, max_inventory):
+    '''Adds new_value to current_total, capping the total at max_inventory, 
+    and returns the new total and any units that could not be added'''
+    current_total += new_value
+  
+    # handles max inventory overflow
+    # if current is more than max, add new_value until inventory is full
+    # calculates deliveries left over that wasnt successfully added to inventory, units_unprocessed 
+    units_unprocessed = 0
+    if current_total > max_inventory:
+        units_unprocessed = current_total - max_inventory
+        current_total = max_inventory
+
+    return current_total, units_unprocessed
