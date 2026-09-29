@@ -1,10 +1,11 @@
-
 EXIT_SIGNAL = -99
 MAX_CAPACITY = 500
 TAX_RATE = 0.1
 INVENTORY_FILE = "inventory.txt"
+
 FIELD_SEPARATOR = ","
 HISTORY_SEPARATOR = "|"
+
 
 ITEM_FIELDS = {
     "id": 0,
@@ -48,6 +49,7 @@ def load_inventory():
         if history != "":
             for amount in history.split(HISTORY_SEPARATOR):
                 transaction_history.append(int(amount))
+
 
         # append item and its details to inventory list
         inventory.append([item_id, name, quantity, transaction_history])
@@ -100,10 +102,12 @@ def get_valid_input(item):
         if not user_input.isdigit() or int(user_input) == 0:
             print("Invalid input. Please enter a positive whole number.")
             failed_entries += 1
+
         # adding this quantity would go over the max capacity for the item
         elif current_quantity + int(user_input) > MAX_CAPACITY:
             print(f"Invalid input. Maximum capacity is {MAX_CAPACITY} units per item.")
             failed_entries += 1
+
         # valid input, convert to int for future calculations and return
         else:
             return int(user_input), failed_entries
@@ -132,6 +136,25 @@ def display_status(item, valid_quantity, tax_amount):
     print(f"Transaction history: {transaction_history}")
 
 
+def save_inventory(inventory):
+    '''Writes every item and its transaction history back to inventory.txt'''
+    # open file in write mode, this replaces the old contents of the file
+    with open(INVENTORY_FILE, "w") as file:
+        for item in inventory:
+            item_id = item[ITEM_FIELDS["id"]]
+            name = item[ITEM_FIELDS["name"]]
+            quantity = str(item[ITEM_FIELDS["quantity"]])
+            transaction_history = item[ITEM_FIELDS["transaction_history"]]
+
+            # join the history back together with | and the fields with , to match the file format
+            # e.g. 1001,Wireless Mouse,20,5|10|5
+            history_text = HISTORY_SEPARATOR.join([str(amount) for amount in transaction_history])
+            line = FIELD_SEPARATOR.join([item_id, name, quantity, history_text])
+            file.write(line + "\n")
+
+    print(f"\nInventory successfully saved to {INVENTORY_FILE}")
+
+
 def generate_report(inventory, failed_entries):
     '''Prints the final inventory summary'''
     # add up the quantity of every item to get the total units
@@ -146,7 +169,7 @@ def generate_report(inventory, failed_entries):
 
 
 def main():
-    '''Runs the inventory auditor loop until the user quits, then prints the report'''
+    '''Runs the inventory auditor loop until the user quits, then prints the report and saves the inventory'''
     # loads inventory from inventory.txt
     inventory = load_inventory()
     total_failed_entries = 0
@@ -178,8 +201,10 @@ def main():
                 tax_amount = calculate_tax(quantity, TAX_RATE)
                 display_status(item, quantity, tax_amount)
 
-    # after quitting, print the final summary
+
+    # after quitting, print the final summary and save everything back to inventory.txt
     generate_report(inventory, total_failed_entries)
+    save_inventory(inventory)
 
 
 if __name__ == "__main__":
