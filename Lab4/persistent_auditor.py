@@ -1,3 +1,4 @@
+
 EXIT_SIGNAL = -99
 MAX_CAPACITY = 500
 TAX_RATE = 0.1
@@ -58,9 +59,10 @@ def display_inventory(inventory):
     '''Prints the id, name and quantity of every item in the inventory'''
     print("\nCurrent Inventory:")
 
-
+    # inventory is empty if inventory.txt was not found
     if len(inventory) == 0:
         print("No items in inventory.")
+
     for item in inventory:
         item_id = item[ITEM_FIELDS["id"]]
         name = item[ITEM_FIELDS["name"]]
@@ -70,7 +72,8 @@ def display_inventory(inventory):
 
 def find_item(inventory, item_id):
     '''Returns the item with the matching item_id, or None if it is not in the inventory'''
-   
+    # find the item in inventory given the item_id
+    # if cannot find then return None
     for item in inventory:
         if item[ITEM_FIELDS["id"]] == item_id:
             return item
@@ -79,7 +82,7 @@ def find_item(inventory, item_id):
 
 def get_valid_input(item):
     '''Prompts until the user enters a valid stock quantity for the item or "quit", and returns it with the number of failed attempts'''
-
+    # initialise failed_entries to 0
     failed_entries = 0
     current_quantity = item[ITEM_FIELDS["quantity"]]
 
@@ -87,24 +90,30 @@ def get_valid_input(item):
         # ask for input
         user_input = input("Enter quantity to add (or 'quit'): ").strip().lower()
 
-
-
+        # if input is quit then return EXIT_SIGNAL so main() knows to stop
         if user_input == "quit":
             return EXIT_SIGNAL, failed_entries
+
+        # invalid inputs
+        # while loop doesn't break so will keep asking user for input until a valid quantity or quit is entered
+        # not a whole number, negative or 0
         if not user_input.isdigit() or int(user_input) == 0:
             print("Invalid input. Please enter a positive whole number.")
             failed_entries += 1
+        # adding this quantity would go over the max capacity for the item
         elif current_quantity + int(user_input) > MAX_CAPACITY:
             print(f"Invalid input. Maximum capacity is {MAX_CAPACITY} units per item.")
             failed_entries += 1
+        # valid input, convert to int for future calculations and return
         else:
             return int(user_input), failed_entries
 
 
 def process_delivery(item, new_quantity):
-    '''Adds new_quantity to the item's quantity'''
+    '''Adds new_quantity to the item's quantity and records it in the item's transaction history'''
     # item is a list so it is updated directly, no need to return anything
     item[ITEM_FIELDS["quantity"]] += new_quantity
+    item[ITEM_FIELDS["transaction_history"]].append(new_quantity)
 
 
 def calculate_tax(amount, tax_rate):
@@ -113,12 +122,14 @@ def calculate_tax(amount, tax_rate):
 
 
 def display_status(item, valid_quantity, tax_amount):
-    '''Prints the delivery that was just added and the item updated quantity'''
+    '''Prints the delivery that was just added and the item updated quantity and transaction history'''
     name = item[ITEM_FIELDS["name"]]
     quantity = item[ITEM_FIELDS["quantity"]]
+    transaction_history = item[ITEM_FIELDS["transaction_history"]]
 
     print(f"\nDelivery added: {valid_quantity} units | Tax: {tax_amount:.2f}")
     print(f"{name} now has {quantity} units")
+    print(f"Transaction history: {transaction_history}")
 
 
 def generate_report(inventory, failed_entries):
@@ -145,18 +156,23 @@ def main():
         display_inventory(inventory)
         item_id = input("\nEnter item ID (or 'quit'): ").strip().lower()
         item = find_item(inventory, item_id)
+
+        # user wants to quit
         if item_id == "quit":
             exit_program = True
         # item id does not exist in the inventory, count it as a failed entry
         elif item is None:
             print("Item not found. Please try again.")
             total_failed_entries += 1
+        # item found, ask for the quantity to add
         else:
             quantity, failed_entries = get_valid_input(item)
             total_failed_entries += failed_entries
 
+            # user typed quit at the quantity prompt
             if quantity == EXIT_SIGNAL:
                 exit_program = True
+            # valid quantity, update the item and show its new status
             else:
                 process_delivery(item, quantity)
                 tax_amount = calculate_tax(quantity, TAX_RATE)
