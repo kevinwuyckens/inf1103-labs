@@ -1,6 +1,34 @@
+import json
+import os
+
+INVENTORY_FILE = "inventory.json"
+
 TITLE_LINE = "=" * 40
 MENU_LINE = "-" * 28
 DIVIDER_LINE = "-" * 45
+
+
+def load_inventory():
+    '''Reads every product and its transaction history from inventory.json and returns the inventory'''
+    # check whether inventory.json exists before trying to open it
+    # if the file does not exist, start with an empty inventory instead of crashing
+    if not os.path.exists(INVENTORY_FILE):
+        print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
+        return []
+
+    print(f"\n{INVENTORY_FILE} found.")
+
+    # open file in read mode and convert the JSON text back into a list of dictionaries
+    # if the file has been damaged and is not valid JSON, start with an empty inventory instead of crashing
+    try:
+        with open(INVENTORY_FILE, "r") as file:
+            inventory = json.load(file)
+    except json.JSONDecodeError:
+        print(f"{INVENTORY_FILE} could not be read. Starting with an empty inventory.")
+        return []
+
+    print("Inventory loaded successfully.")
+    return inventory
 
 
 def display_menu():
@@ -163,13 +191,8 @@ def main():
     print("INVENTORY MANAGEMENT SYSTEM")
     print(TITLE_LINE)
 
-    # each product is a dictionary and all products are stored in a list
-    # the starting stock is recorded as the first transaction in each product's history
-    inventory = [
-        {"id": "P001", "name": "Laptop", "price": 1200.00, "stock": 15, "transaction_history": [15]},
-        {"id": "P002", "name": "Mouse", "price": 25.50, "stock": 40, "transaction_history": [40]},
-        {"id": "P003", "name": "Keyboard", "price": 45.00, "stock": 25, "transaction_history": [25]}
-    ]
+    # loads inventory from inventory.json, or an empty list if the file does not exist
+    inventory = load_inventory()
 
     display_menu()
     exit_program = False
