@@ -31,6 +31,14 @@ def load_inventory():
     return inventory
 
 
+def save_inventory(inventory):
+    '''Writes every product and its transaction history to inventory.json'''
+    # open file in write mode, this replaces the old contents of the file
+    # indent=4 puts each field on its own line so the file is easy to read in a text editor
+    with open(INVENTORY_FILE, "w") as file:
+        json.dump(inventory, file, indent=4)
+
+
 def display_menu():
     '''Prints the list of menu options'''
     print("\n----------- MENU -----------")
@@ -38,7 +46,8 @@ def display_menu():
     print("2. Add Product")
     print("3. Update Stock")
     print("4. Search Product")
-    print("5. Exit")
+    print("5. Save Inventory")
+    print("6. Exit")
     print(MENU_LINE)
 
 
@@ -208,14 +217,21 @@ def main():
             update_stock(inventory)
         elif option == "4":
             search_product(inventory)
-        # user wants to exit
         elif option == "5":
+            print("\nSaving inventory...")
+            save_inventory(inventory)
+            print(f"Inventory saved successfully to {INVENTORY_FILE}.")
+        # user wants to exit, save first so no changes are lost
+        elif option == "6":
+            print("\nSaving inventory before exit...")
+            save_inventory(inventory)
+            print("Inventory saved successfully.")
             print("\nThank you for using Inventory Management System.")
             print("Program terminated.")
             exit_program = True
         # anything else is not a menu option, show the menu again so the user can see the choices
         else:
-            print("Invalid option. Please enter a number from 1 to 5.")
+            print("Invalid option. Please enter a number from 1 to 6.")
             display_menu()
 
 
