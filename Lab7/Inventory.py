@@ -27,12 +27,9 @@ class Inventory:
         return None
 
     def get_products(self) -> list[Product]:
-        '''Returns a copy of the list of products'''
-        # return a copy so code outside the class cannot add or remove products without going through add_product
         return list(self.__products)
 
     def display_all(self) -> None:
-        '''Prints the id, name, price and stock of every product in the inventory'''
         print("\nCurrent Inventory")
         print(DIVIDER_LINE)
 
