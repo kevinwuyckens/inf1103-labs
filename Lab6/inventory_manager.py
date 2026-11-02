@@ -75,13 +75,44 @@ class Product:
         print(DIVIDER_LINE)
 
 
+class Inventory:
+    '''Manages a collection of Product objects'''
+
+    def __init__(self):
+        '''Creates an empty inventory'''
+        self.__products = []
+
+    def add_product(self, product):
+        '''Adds a product to the inventory, returns False if a product with the same id already exists'''
+        # product id must be unique, otherwise search and update would not know which product to use
+        if self.search_product(product.get_product_id()) is not None:
+            return False
+
+        self.__products.append(product)
+        return True
+
+    def search_product(self, product_id):
+        '''Returns the product with the matching product_id, or None if it is not in the inventory'''
+        for product in self.__products:
+            if product.get_product_id() == product_id:
+                return product
+        return None
+
+    def get_products(self):
+        '''Returns a copy of the list of products'''
+        # return a copy so code outside the class cannot add or remove products without going through add_product
+        return list(self.__products)
+
+
 def load_inventory():
-    '''Reads every product and its transaction history from inventory.json and returns a list of Product objects'''
+    '''Reads every product and its transaction history from inventory.json and returns an Inventory object'''
+    inventory = Inventory()
+
     # check whether inventory.json exists before trying to open it
     # if the file does not exist, start with an empty inventory instead of crashing
     if not os.path.exists(INVENTORY_FILE):
         print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
-        return []
+        return inventory
 
     print(f"\n{INVENTORY_FILE} found.")
 
@@ -92,13 +123,12 @@ def load_inventory():
             data = json.load(file)
     except json.JSONDecodeError:
         print(f"{INVENTORY_FILE} could not be read. Starting with an empty inventory.")
-        return []
+        return inventory
 
-    # turn each dictionary from the file into a Product object
-    inventory = []
+    # turn each dictionary from the file into a Product object and store it in the inventory
     for item in data:
         product = Product(item["id"], item["name"], item["price"], item["stock"], item["transaction_history"])
-        inventory.append(product)
+        inventory.add_product(product)
 
     print("Inventory loaded successfully.")
     return inventory
@@ -108,7 +138,7 @@ def save_inventory(inventory):
     '''Writes every product and its transaction history to inventory.json'''
     # JSON cannot store Product objects directly, so turn each one back into a dictionary using its public methods
     data = []
-    for product in inventory:
+    for product in inventory.get_products():
         data.append({
             "id": product.get_product_id(),
             "name": product.get_name(),
@@ -132,16 +162,6 @@ def display_menu():
     print("5. Save Inventory")
     print("6. Exit")
     print(MENU_LINE)
-
-
-def find_product(inventory, product_id):
-    '''Returns the product with the matching product_id, or None if it is not in the inventory'''
-    # find the product in inventory given the product_id
-    # if cannot find then return None
-    for product in inventory:
-        if product.get_product_id() == product_id:
-            return product
-    return None
 
 
 def get_valid_price():
@@ -180,11 +200,13 @@ def display_all(inventory):
     print("\nCurrent Inventory")
     print(DIVIDER_LINE)
 
-    if len(inventory) == 0:
+    products = inventory.get_products()
+
+    if len(products) == 0:
         print("No products in inventory.")
 
     # each product knows how to display itself
-    for product in inventory:
+    for product in products:
         product.display_information()
 
     print(DIVIDER_LINE)
@@ -197,11 +219,11 @@ def add_product(inventory):
     # product ids are stored in uppercase so "p004" and "P004" are treated as the same product
     product_id = input("Product ID: ").strip().upper()
 
-    # product id cannot be empty or already used, otherwise search and update would not know which product to use
+    # check the id before asking for the other details so the user does not type them for nothing
     if product_id == "":
         print("\nInvalid input. Product ID cannot be empty.")
         return
-    if find_product(inventory, product_id) is not None:
+    if inventory.search_product(product_id) is not None:
         print(f"\nProduct {product_id} already exists. Use Update Stock to change its stock.")
         return
 
@@ -214,12 +236,9 @@ def add_product(inventory):
     price = get_valid_price()
     stock = get_valid_stock("Stock Quantity: ")
 
-    # each product is a Product object
-    # the constructor records the starting stock as the first transaction in its history
+    # create the Product object and pass it to the inventory to store
     product = Product(product_id, name, price, stock)
-
-    # inventory is a list so it is updated directly, no need to return anything
-    inventory.append(product)
+    inventory.add_product(product)
     print("\nProduct added successfully!")
 
 
@@ -227,7 +246,7 @@ def update_stock(inventory):
     '''Finds a product by id and asks the product to update its stock'''
     print("\nUpdate Stock")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = find_product(inventory, product_id)
+    product = inventory.search_product(product_id)
 
     # product id does not exist in the inventory
     if product is None:
@@ -250,7 +269,7 @@ def search_product(inventory):
     '''Finds a product by id and prints all of its details'''
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = find_product(inventory, product_id)
+    product = inventory.search_product(product_id)
 
     # product id does not exist in the inventory
     if product is None:
@@ -267,7 +286,7 @@ def main():
     print("INVENTORY MANAGEMENT SYSTEM")
     print(TITLE_LINE)
 
-    # loads inventory from inventory.json, or an empty list if the file does not exist
+    # loads inventory from inventory.json, or an empty inventory if the file does not exist
     inventory = load_inventory()
 
     display_menu()
