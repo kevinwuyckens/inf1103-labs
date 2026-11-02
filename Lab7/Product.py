@@ -1,6 +1,7 @@
-class Product:
-    '''Represents and manages a single product in the inventory'''
+from abc import ABC, abstractmethod
 
+
+class Product(ABC):
     def __init__(self, product_id: str, name: str, price: float, stock: int, transaction_history: list[int] | None = None) -> None:
         '''Creates a product, the starting stock becomes the first transaction if no history is given.
         transaction_history parameter is of either list[int] or None type, and = None makes it optional
@@ -46,7 +47,6 @@ class Product:
             raise ValueError("Stock quantity cannot be negative.")
 
         # record how much the stock changed: positive for a delivery, negative for a sale
-        # so the full history of transactions is kept, not just the running total
         change = quantity - self.__stock
         if change != 0:
             self.__transaction_history.append(change)
@@ -64,3 +64,16 @@ class Product:
         print(f"Name: {self.__name}")
         print(f"Price: ${self.__price:.2f}")
         print(f"Stock: {self.__stock}")
+
+    def to_dictionary(self) -> dict:
+        return {
+            "id": self.__product_id,
+            "name": self.__name,
+            "price": self.__price,
+            "stock": self.__stock,
+            "transaction_history": list(self.__transaction_history)
+        }
+    @abstractmethod
+    def get_fulfilment_info(self) -> str:
+        '''Returns how the product is delivered to the customer, every subclass must implement this'''
+        pass

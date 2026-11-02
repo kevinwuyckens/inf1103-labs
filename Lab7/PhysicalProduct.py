@@ -12,9 +12,18 @@ class PhysicalProduct(Product):
 
     def display_information(self) -> None:
         super().display_information()
-        print(f"    Type: Physical | Weight: {self.__weight:.2f} kg")
+        print(f"Type: Physical | Weight: {self.__weight:.2f} kg")
 
     def display_details(self) -> None:
         super().display_details()
         print("Type: Physical")
         print(f"Weight: {self.__weight:.2f} kg")
+
+    def get_fulfilment_info(self) -> str:
+        return "This product requires physical shipping to the customer's address."
+
+    def to_dictionary(self) -> dict:
+        data = super().to_dictionary()
+        data["type"] = "physical"
+        data["weight"] = self.__weight
+        return data

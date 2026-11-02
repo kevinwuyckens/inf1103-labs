@@ -1,5 +1,6 @@
 import json
-from Product import Product
+from PhysicalProduct import PhysicalProduct
+from DigitalProduct import DigitalProduct
 from Inventory import Inventory
 
 INVENTORY_FILE = "inventory.json"
@@ -20,9 +21,16 @@ def load_inventory() -> Inventory:
         print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
         return inventory
 
-    # turn each dictionary from the file into a Product object and store it in the inventory
+    # use the type saved with each product to create the matching subclass, then store it in the inventory
     for item in data:
-        product = Product(item["id"], item["name"], item["price"], item["stock"], item["transaction_history"])
+        if item["type"] == "physical":
+            product = PhysicalProduct(item["id"], item["name"], item["price"], item["stock"], item["weight"], item["transaction_history"])
+        elif item["type"] == "digital":
+            product = DigitalProduct(item["id"], item["name"], item["price"], item["stock"], item["download_size"], item["transaction_history"])
+        else:
+            print(f"Unknown product type '{item['type']}' for product {item['id']}, skipped.")
+            continue
+
         inventory.add_product(product)
 
     print(f"\n{INVENTORY_FILE} loaded successfully.")
@@ -30,17 +38,12 @@ def load_inventory() -> Inventory:
 
 
 def save_inventory(inventory: Inventory) -> None:
-    '''Writes every product and its transaction history to inventory.json'''
-    # JSON cannot store Product objects directly, so turn each one back into a dictionary using its public methods
+    '''Writes every product, its type and its transaction history to inventory.json'''
+    # JSON cannot store Product objects directly, so each product turns itself into a dictionary
+    # each subclass adds its own type and extra attribute so the right subclass can be created when loading
     data = []
     for product in inventory.get_products():
-        data.append({
-            "id": product.get_product_id(),
-            "name": product.get_name(),
-            "price": product.get_price(),
-            "stock": product.get_stock(),
-            "transaction_history": product.get_transaction_history()
-        })
+        data.append(product.to_dictionary())
 
     # open file in write mode, this replaces the old contents of the file
     with open(INVENTORY_FILE, "w") as file:
@@ -59,23 +62,40 @@ def display_menu() -> None:
     print(MENU_LINE)
 
 
-def get_valid_price() -> float:
-    '''Prompts until the user enters a price greater than 0, and returns it'''
+def get_valid_positive_number(prompt: str) -> float:
+    '''Prompts until the user enters a number greater than 0, and returns it.
+    Used for price, weight and download size since none of them can be 0 or negative.'''
     while True:
-        user_input = input("Price: ").strip()
+        user_input = input(prompt).strip()
 
         # float() raises ValueError if the input is not a number, e.g. "abc"
         try:
-            price = float(user_input)
+            number = float(user_input)
         except ValueError:
             print("Invalid input. Please enter a number.")
             continue
 
-        # a product cannot be free or have a negative price
-        if price <= 0:
-            print("Invalid input. Price must be greater than 0.")
+        if number <= 0:
+            print("Invalid input. Value must be greater than 0.")
         else:
-            return price
+            return number
+
+
+def get_valid_product_type() -> str:
+    '''Prompts until the user chooses a product type, and returns "physical" or "digital"'''
+    print("Product Type:")
+    print("1. Physical")
+    print("2. Digital")
+
+    while True:
+        choice = input("Choose product type (1 or 2): ").strip()
+
+        if choice == "1":
+            return "physical"
+        if choice == "2":
+            return "digital"
+
+        print("Invalid input. Please enter 1 or 2.")
 
 
 def get_valid_stock(prompt: str) -> int:
@@ -83,7 +103,7 @@ def get_valid_stock(prompt: str) -> int:
     while True:
         user_input = input(prompt).strip()
 
-        # isdecimal() is False for negatives, decimals and text, so only whole numbers 0 or more are accepted
+        # isdecimal() is False for negatives, decimals, and text, so only whole numbers 0 or more are accepted
         if user_input.isdecimal():
             return int(user_input)
 
@@ -105,17 +125,25 @@ def add_product(inventory: Inventory) -> None:
         print(f"\nProduct {product_id} already exists. Use Update Stock to change its stock.")
         return
 
+    product_type = get_valid_product_type()
+
     # keep asking until a name is entered
     name = input("Product Name: ").strip()
     while name == "":
         print("Invalid input. Product name cannot be empty.")
         name = input("Product Name: ").strip()
 
-    price = get_valid_price()
+    price = get_valid_positive_number("Price: ")
     stock = get_valid_stock("Stock Quantity: ")
+    
+    if product_type == "physical":
+        weight = get_valid_positive_number("Weight (kg): ")
+        product = PhysicalProduct(product_id, name, price, stock, weight)
+    else:
+        download_size = get_valid_positive_number("Download Size (MB): ")
+        product = DigitalProduct(product_id, name, price, stock, download_size)
 
-    # create the Product object and pass it to the inventory to store
-    product = Product(product_id, name, price, stock)
+    # pass the product to the inventory to store
     inventory.add_product(product)
     print("\nProduct added successfully!")
 
@@ -157,6 +185,7 @@ def search_product(inventory: Inventory) -> None:
     print("\nProduct Found")
     print(DIVIDER_LINE)
     product.display_details()
+    print(f"Fulfilment: {product.get_fulfilment_info()}")
     print(DIVIDER_LINE)
 
 
