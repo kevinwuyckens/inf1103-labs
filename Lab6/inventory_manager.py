@@ -1,128 +1,22 @@
 import json
-import os
+from Product import Product
+from Inventory import Inventory
 
 INVENTORY_FILE = "inventory.json"
-
 TITLE_LINE = "=" * 40
 MENU_LINE = "-" * 25
-DIVIDER_LINE = "-" * 40
-
-
-class Product:
-    '''Represents and manages a single product in the inventory'''
-
-    def __init__(self, product_id, name, price, stock, transaction_history=None):
-        '''Creates a product, the starting stock becomes the first transaction if no history is given'''
-        # double underscore marks each attribute as private
-        # code outside the class should use the public methods below instead of changing these directly
-        self.__product_id = product_id
-        self.__name = name
-        self.__price = price
-        self.__stock = stock
-
-        # a product loaded from inventory.json already has a history, a brand new product starts with its opening stock
-        if transaction_history is None:
-            self.__transaction_history = [stock]
-        else:
-            self.__transaction_history = list(transaction_history)
-
-    def get_product_id(self):
-        '''Returns the product id'''
-        return self.__product_id
-
-    def get_name(self):
-        '''Returns the product name'''
-        return self.__name
-
-    def get_price(self):
-        '''Returns the product price'''
-        return self.__price
-
-    def get_stock(self):
-        '''Returns the current stock quantity'''
-        return self.__stock
-
-    def get_transaction_history(self):
-        '''Returns a copy of the transaction history'''
-        # return a copy so code outside the class cannot change the history without going through update_stock
-        return list(self.__transaction_history)
-
-    def update_stock(self, quantity):
-        '''Replaces the stock with a new quantity and records the change in the transaction history'''
-        # the product controls its own stock, so it refuses a value that would put it in an invalid state
-        if quantity < 0:
-            raise ValueError("Stock quantity cannot be negative.")
-
-        # record how much the stock changed (positive for a delivery, negative for a sale)
-        # so the full history of transactions is kept, not just the running total
-        change = quantity - self.__stock
-        if change != 0:
-            self.__transaction_history.append(change)
-
-        self.__stock = quantity
-
-    def display_information(self):
-        '''Prints the id, name, price and stock on one line'''
-        print(f"ID: {self.__product_id} | Name: {self.__name} | Price: ${self.__price:.2f} | Stock: {self.__stock}")
-
-    def display_details(self):
-        '''Prints every detail of the product on its own line'''
-        print(DIVIDER_LINE)
-        print(f"ID: {self.__product_id}")
-        print(f"Name: {self.__name}")
-        print(f"Price: ${self.__price:.2f}")
-        print(f"Stock: {self.__stock}")
-        print(DIVIDER_LINE)
-
-
-class Inventory:
-    '''Manages a collection of Product objects'''
-
-    def __init__(self):
-        '''Creates an empty inventory'''
-        self.__products = []
-
-    def add_product(self, product):
-        '''Adds a product to the inventory, returns False if a product with the same id already exists'''
-        # product id must be unique, otherwise search and update would not know which product to use
-        if self.search_product(product.get_product_id()) is not None:
-            return False
-
-        self.__products.append(product)
-        return True
-
-    def search_product(self, product_id):
-        '''Returns the product with the matching product_id, or None if it is not in the inventory'''
-        for product in self.__products:
-            if product.get_product_id() == product_id:
-                return product
-        return None
-
-    def get_products(self):
-        '''Returns a copy of the list of products'''
-        # return a copy so code outside the class cannot add or remove products without going through add_product
-        return list(self.__products)
-
 
 def load_inventory():
     '''Reads every product and its transaction history from inventory.json and returns an Inventory object'''
     inventory = Inventory()
 
-    # check whether inventory.json exists before trying to open it
-    # if the file does not exist, start with an empty inventory instead of crashing
-    if not os.path.exists(INVENTORY_FILE):
-        print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
-        return inventory
-
-    print(f"\n{INVENTORY_FILE} found.")
-
     # open file in read mode and convert the JSON text back into a list of dictionaries
-    # if the file has been damaged and is not valid JSON, start with an empty inventory instead of crashing
+    # if the file does not exist, start with an empty inventory instead of crashing
     try:
         with open(INVENTORY_FILE, "r") as file:
             data = json.load(file)
-    except json.JSONDecodeError:
-        print(f"{INVENTORY_FILE} could not be read. Starting with an empty inventory.")
+    except FileNotFoundError:
+        print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
         return inventory
 
     # turn each dictionary from the file into a Product object and store it in the inventory
@@ -130,7 +24,7 @@ def load_inventory():
         product = Product(item["id"], item["name"], item["price"], item["stock"], item["transaction_history"])
         inventory.add_product(product)
 
-    print("Inventory loaded successfully.")
+    print(f"\n{INVENTORY_FILE} loaded successfully.")
     return inventory
 
 
@@ -193,23 +87,6 @@ def get_valid_stock(prompt):
             return int(user_input)
 
         print("Invalid input. Please enter a whole number of 0 or more.")
-
-
-def display_all(inventory):
-    '''Prints the id, name, price and stock of every product in the inventory'''
-    print("\nCurrent Inventory")
-    print(DIVIDER_LINE)
-
-    products = inventory.get_products()
-
-    if len(products) == 0:
-        print("No products in inventory.")
-
-    # each product knows how to display itself
-    for product in products:
-        product.display_information()
-
-    print(DIVIDER_LINE)
 
 
 def add_product(inventory):
@@ -296,7 +173,7 @@ def main():
         option = input("\nEnter option: ").strip()
 
         if option == "1":
-            display_all(inventory)
+            inventory.display_all()
         elif option == "2":
             add_product(inventory)
         elif option == "3":
@@ -319,7 +196,6 @@ def main():
         else:
             print("Invalid option. Please enter a number from 1 to 6.")
             display_menu()
-
 
 if __name__ == "__main__":
     main()
