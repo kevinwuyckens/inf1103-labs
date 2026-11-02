@@ -6,7 +6,7 @@ INVENTORY_FILE = "inventory.json"
 TITLE_LINE = "=" * 40
 MENU_LINE = "-" * 25
 
-def load_inventory():
+def load_inventory() -> Inventory:
     '''Reads every product and its transaction history from inventory.json and returns an Inventory object'''
     inventory = Inventory()
 
@@ -28,7 +28,7 @@ def load_inventory():
     return inventory
 
 
-def save_inventory(inventory):
+def save_inventory(inventory: Inventory) -> None:
     '''Writes every product and its transaction history to inventory.json'''
     # JSON cannot store Product objects directly, so turn each one back into a dictionary using its public methods
     data = []
@@ -46,7 +46,7 @@ def save_inventory(inventory):
         json.dump(data, file)
 
 
-def display_menu():
+def display_menu() -> None:
     '''Prints the list of menu options'''
     print("\n----------- MENU -----------")
     print("1. Display All Products")
@@ -58,7 +58,7 @@ def display_menu():
     print(MENU_LINE)
 
 
-def get_valid_price():
+def get_valid_price() -> float:
     '''Prompts until the user enters a price greater than 0, and returns it'''
     while True:
         user_input = input("Price: ").strip()
@@ -77,7 +77,7 @@ def get_valid_price():
             return price
 
 
-def get_valid_stock(prompt):
+def get_valid_stock(prompt: str) -> int:
     '''Prompts until the user enters a stock quantity of 0 or more, and returns it'''
     while True:
         user_input = input(prompt).strip()
@@ -89,7 +89,7 @@ def get_valid_stock(prompt):
         print("Invalid input. Please enter a whole number of 0 or more.")
 
 
-def add_product(inventory):
+def add_product(inventory: Inventory) -> None:
     '''Asks for the details of a new product and adds it to the inventory'''
     print("\nAdd New Product")
 
@@ -119,7 +119,7 @@ def add_product(inventory):
     print("\nProduct added successfully!")
 
 
-def update_stock(inventory):
+def update_stock(inventory: Inventory) -> None:
     '''Finds a product by id and asks the product to update its stock'''
     print("\nUpdate Stock")
     product_id = input("Enter Product ID: ").strip().upper()
@@ -142,7 +142,7 @@ def update_stock(inventory):
     print("\nStock updated successfully!")
 
 
-def search_product(inventory):
+def search_product(inventory: Inventory) -> None:
     '''Finds a product by id and prints all of its details'''
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
@@ -157,7 +157,7 @@ def search_product(inventory):
     product.display_details()
 
 
-def main():
+def main() -> None:
     '''Shows the menu and runs the chosen option until the user exits'''
     print(TITLE_LINE)
     print("INVENTORY MANAGEMENT SYSTEM")
