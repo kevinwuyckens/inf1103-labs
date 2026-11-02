@@ -4,8 +4,8 @@ import os
 INVENTORY_FILE = "inventory.json"
 
 TITLE_LINE = "=" * 40
-MENU_LINE = "-" * 28
-DIVIDER_LINE = "-" * 45
+MENU_LINE = "-" * 25
+DIVIDER_LINE = "-" * 40
 
 
 class Product:
@@ -60,6 +60,19 @@ class Product:
             self.__transaction_history.append(change)
 
         self.__stock = quantity
+
+    def display_information(self):
+        '''Prints the id, name, price and stock on one line'''
+        print(f"ID: {self.__product_id} | Name: {self.__name} | Price: ${self.__price:.2f} | Stock: {self.__stock}")
+
+    def display_details(self):
+        '''Prints every detail of the product on its own line'''
+        print(DIVIDER_LINE)
+        print(f"ID: {self.__product_id}")
+        print(f"Name: {self.__name}")
+        print(f"Price: ${self.__price:.2f}")
+        print(f"Stock: {self.__stock}")
+        print(DIVIDER_LINE)
 
 
 def load_inventory():
@@ -170,8 +183,9 @@ def display_all(inventory):
     if len(inventory) == 0:
         print("No products in inventory.")
 
+    # each product knows how to display itself
     for product in inventory:
-        print(f"ID: {product.get_product_id()} | Name: {product.get_name()} | Price: ${product.get_price():.2f} | Stock: {product.get_stock()}")
+        product.display_information()
 
     print(DIVIDER_LINE)
 
@@ -244,12 +258,7 @@ def search_product(inventory):
         return
 
     print("\nProduct Found")
-    print(DIVIDER_LINE)
-    print(f"ID: {product.get_product_id()}")
-    print(f"Name: {product.get_name()}")
-    print(f"Price: ${product.get_price():.2f}")
-    print(f"Stock: {product.get_stock()}")
-    print(DIVIDER_LINE)
+    product.display_details()
 
 
 def main():
