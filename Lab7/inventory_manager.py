@@ -1,6 +1,7 @@
 import json
 from PhysicalProduct import PhysicalProduct
 from DigitalProduct import DigitalProduct
+from CanBeShipped import CanBeShipped
 from Inventory import Inventory
 
 INVENTORY_FILE = "inventory.json"
@@ -186,6 +187,11 @@ def search_product(inventory: Inventory) -> None:
     print(DIVIDER_LINE)
     product.display_details()
     print(f"Fulfilment: {product.get_fulfilment_info()}")
+
+    # only products that implement the CanBeShipped interface have a shipping cost
+    if isinstance(product, CanBeShipped):
+        print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
+
     print(DIVIDER_LINE)
 
 

@@ -1,7 +1,11 @@
+from CanBeShipped import CanBeShipped
 from Product import Product
 
+BASE_SHIPPING_COST = 5.00
+SHIPPING_COST_PER_KG = 2.00
 
-class PhysicalProduct(Product):
+
+class PhysicalProduct(Product, CanBeShipped):
 
     def __init__(self, product_id: str, name: str, price: float, stock: int, weight: float, transaction_history: list[int] | None = None) -> None:
         super().__init__(product_id, name, price, stock, transaction_history)
@@ -21,6 +25,9 @@ class PhysicalProduct(Product):
 
     def get_fulfilment_info(self) -> str:
         return "This product requires physical shipping to the customer's address."
+
+    def calculate_shipping_cost(self) -> float:
+        return BASE_SHIPPING_COST + SHIPPING_COST_PER_KG * self.__weight
 
     def to_dictionary(self) -> dict:
         data = super().to_dictionary()
