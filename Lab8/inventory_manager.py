@@ -71,10 +71,11 @@ def display_menu() -> None:
     print("2. Add Product")
     print("3. Update Stock")
     print("4. Search Product")
-    print("5. Display Suppliers")
-    print("6. Add Supplier")
-    print("7. Save Inventory")
-    print("8. Exit")
+    print("5. Remove Product")
+    print("6. Display Suppliers")
+    print("7. Add Supplier")
+    print("8. Save Inventory")
+    print("9. Exit")
     print(MENU_LINE)
 
 
@@ -154,7 +155,7 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
     if product_id == "":
         print("\nInvalid input. Product ID cannot be empty.")
         return
-    if inventory.search_product(product_id) is not None:
+    if inventory.find_product(product_id) is not None:
         print(f"\nProduct {product_id} already exists. Use Update Stock to change its stock.")
         return
 
@@ -188,7 +189,7 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
 def update_stock(inventory: Inventory) -> None:
     print("\nUpdate Stock")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = inventory.search_product(product_id)
+    product = inventory.find_product(product_id)
 
     if product is None:
         print("\nProduct not found.")
@@ -208,7 +209,7 @@ def update_stock(inventory: Inventory) -> None:
 def search_product(inventory: Inventory) -> None:
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = inventory.search_product(product_id)
+    product = inventory.find_product(product_id)
 
     if product is None:
         print("\nProduct not found.")
@@ -223,6 +224,19 @@ def search_product(inventory: Inventory) -> None:
         print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
 
     print(DIVIDER_LINE)
+
+
+def remove_product(inventory: Inventory) -> None:
+    print("\nRemove Product")
+    product_id = input("Enter Product ID: ").strip().upper()
+
+    product = inventory.remove_product(product_id)
+
+    if product is None:
+        print("\nProduct not found.")
+        return
+
+    print(f"\nProduct {product.get_product_id()} ({product.get_name()}) removed from inventory.")
 
 
 def add_supplier(suppliers: list[Supplier]) -> None:
@@ -273,14 +287,16 @@ def main() -> None:
         elif option == "4":
             search_product(inventory)
         elif option == "5":
-            display_suppliers(suppliers)
+            remove_product(inventory)
         elif option == "6":
-            add_supplier(suppliers)
+            display_suppliers(suppliers)
         elif option == "7":
+            add_supplier(suppliers)
+        elif option == "8":
             print("\nSaving inventory...")
             save_data(suppliers, inventory)
             print(f"Inventory saved successfully to {INVENTORY_FILE}.")
-        elif option == "8":
+        elif option == "9":
             print("\nSaving inventory before exit...")
             save_data(suppliers, inventory)
             print("Inventory saved successfully.")
@@ -288,7 +304,7 @@ def main() -> None:
             print("Program terminated.")
             exit_program = True
         else:
-            print("Invalid option. Please enter a number from 1 to 8.")
+            print("Invalid option. Please enter a number from 1 to 9.")
             display_menu()
 
 if __name__ == "__main__":
