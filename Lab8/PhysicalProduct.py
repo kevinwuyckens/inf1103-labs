@@ -30,7 +30,7 @@ class PhysicalProduct(Product, CanBeShipped):
     def calculate_shipping_cost(self) -> float:
         return BASE_SHIPPING_COST + SHIPPING_COST_PER_KG * self.__weight
 
-    def to_dictionary(self) -> dict:
+    def to_dictionary(self) -> dict[str, str | int | float | list[int]]:
         data = super().to_dictionary()
         data["type"] = "physical"
         data["weight"] = self.__weight

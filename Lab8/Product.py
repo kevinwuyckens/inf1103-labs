@@ -54,7 +54,7 @@ class Product(ABC):
         print(f"Stock: {self.__stock}")
         print(f"Supplier: {self.__supplier.get_name()} ({self.__supplier.get_supplier_id()})")
 
-    def to_dictionary(self) -> dict:
+    def to_dictionary(self) -> dict[str, str | int | float | list[int]]:
         return {
             "id": self.__product_id,
             "name": self.__name,

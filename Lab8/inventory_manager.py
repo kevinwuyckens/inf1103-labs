@@ -1,5 +1,6 @@
 import json
 from Supplier import Supplier
+from Product import Product
 from PhysicalProduct import PhysicalProduct
 from DigitalProduct import DigitalProduct
 from CanBeShipped import CanBeShipped
@@ -39,6 +40,7 @@ def load_data() -> tuple[list[Supplier], Inventory]:
             print(f"Unknown supplier '{item['supplier_id']}' for product {item['id']}, skipped.")
             continue
 
+        product: Product
         if item["type"] == "physical":
             product = PhysicalProduct(item["id"], item["name"], item["price"], item["stock"], supplier, item["weight"], item["transaction_history"])
         elif item["type"] == "digital":
@@ -54,11 +56,11 @@ def load_data() -> tuple[list[Supplier], Inventory]:
 
 
 def save_data(suppliers: list[Supplier], inventory: Inventory) -> None:
-    supplier_data = []
+    supplier_data: list[dict[str, str]] = []
     for supplier in suppliers:
         supplier_data.append(supplier.to_dictionary())
 
-    product_data = []
+    product_data: list[dict[str, str | int | float | list[int]]] = []
     for product in inventory.get_products():
         product_data.append(product.to_dictionary())
 
@@ -187,6 +189,7 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
 
     supplier = get_valid_supplier(suppliers)
 
+    product: Product
     if product_type == "physical":
         weight = get_valid_positive_number("Weight (kg): ")
         product = PhysicalProduct(product_id, name, price, stock, supplier, weight)
