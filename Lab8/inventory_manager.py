@@ -71,8 +71,10 @@ def display_menu() -> None:
     print("2. Add Product")
     print("3. Update Stock")
     print("4. Search Product")
-    print("5. Save Inventory")
-    print("6. Exit")
+    print("5. Display Suppliers")
+    print("6. Add Supplier")
+    print("7. Save Inventory")
+    print("8. Exit")
     print(MENU_LINE)
 
 
@@ -223,6 +225,32 @@ def search_product(inventory: Inventory) -> None:
     print(DIVIDER_LINE)
 
 
+def add_supplier(suppliers: list[Supplier]) -> None:
+    print("\nAdd New Supplier")
+
+    supplier_id = input("Supplier ID: ").strip().upper()
+
+    if supplier_id == "":
+        print("\nInvalid input. Supplier ID cannot be empty.")
+        return
+    if find_supplier(suppliers, supplier_id) is not None:
+        print(f"\nSupplier {supplier_id} already exists.")
+        return
+
+    name = input("Supplier Name: ").strip()
+    while name == "":
+        print("Invalid input. Supplier name cannot be empty.")
+        name = input("Supplier Name: ").strip()
+
+    contact_email = input("Contact Email: ").strip()
+    while "@" not in contact_email:
+        print("Invalid input. Please enter a valid email address.")
+        contact_email = input("Contact Email: ").strip()
+
+    suppliers.append(Supplier(supplier_id, name, contact_email))
+    print("\nSupplier added successfully!")
+
+
 def main() -> None:
     print(TITLE_LINE)
     print("INVENTORY MANAGEMENT SYSTEM")
@@ -245,10 +273,14 @@ def main() -> None:
         elif option == "4":
             search_product(inventory)
         elif option == "5":
+            display_suppliers(suppliers)
+        elif option == "6":
+            add_supplier(suppliers)
+        elif option == "7":
             print("\nSaving inventory...")
             save_data(suppliers, inventory)
             print(f"Inventory saved successfully to {INVENTORY_FILE}.")
-        elif option == "6":
+        elif option == "8":
             print("\nSaving inventory before exit...")
             save_data(suppliers, inventory)
             print("Inventory saved successfully.")
@@ -256,7 +288,7 @@ def main() -> None:
             print("Program terminated.")
             exit_program = True
         else:
-            print("Invalid option. Please enter a number from 1 to 6.")
+            print("Invalid option. Please enter a number from 1 to 8.")
             display_menu()
 
 if __name__ == "__main__":
