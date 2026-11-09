@@ -221,6 +221,11 @@ def update_stock(inventory: Inventory) -> None:
     print("\nStock updated successfully!")
 
 
+def show_product_details(product: Product) -> None:
+    product.display_details()
+    print(f"Fulfilment: {product.get_fulfilment_info()}")
+
+
 def search_product(inventory: Inventory) -> None:
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
@@ -232,8 +237,7 @@ def search_product(inventory: Inventory) -> None:
 
     print("\nProduct Found")
     print(DIVIDER_LINE)
-    product.display_details()
-    print(f"Fulfilment: {product.get_fulfilment_info()}")
+    show_product_details(product)
 
     if isinstance(product, CanBeShipped):
         print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
