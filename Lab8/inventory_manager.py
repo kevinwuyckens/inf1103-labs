@@ -4,6 +4,7 @@ from PhysicalProduct import PhysicalProduct
 from DigitalProduct import DigitalProduct
 from CanBeShipped import CanBeShipped
 from Inventory import Inventory
+from Order import Order
 
 INVENTORY_FILE = "inventory.json"
 TITLE_LINE = "=" * 40
@@ -74,8 +75,9 @@ def display_menu() -> None:
     print("5. Remove Product")
     print("6. Display Suppliers")
     print("7. Add Supplier")
-    print("8. Save Inventory")
-    print("9. Exit")
+    print("8. Create Order")
+    print("9. Save Inventory")
+    print("10. Exit")
     print(MENU_LINE)
 
 
@@ -119,6 +121,16 @@ def get_valid_stock(prompt: str) -> int:
             return int(user_input)
 
         print("Invalid input. Please enter a whole number of 0 or more.")
+
+
+def get_valid_quantity(prompt: str) -> int:
+    while True:
+        user_input = input(prompt).strip()
+
+        if user_input.isdecimal() and int(user_input) > 0:
+            return int(user_input)
+
+        print("Invalid input. Please enter a whole number greater than 0.")
 
 
 def display_suppliers(suppliers: list[Supplier]) -> None:
@@ -265,6 +277,34 @@ def add_supplier(suppliers: list[Supplier]) -> None:
     print("\nSupplier added successfully!")
 
 
+def create_order(inventory: Inventory) -> None:
+    print("\nCreate Order")
+
+    order_id = input("Order ID: ").strip().upper()
+    if order_id == "":
+        print("\nInvalid input. Order ID cannot be empty.")
+        return
+
+    order = Order(order_id)
+
+    while True:
+        product_id = input("\nProduct ID (press Enter to finish): ").strip().upper()
+        if product_id == "":
+            break
+
+        product = inventory.find_product(product_id)
+        if product is None:
+            print("Product not found.")
+            continue
+
+        quantity = get_valid_quantity("Quantity: ")
+
+        order.add_order_line(product, quantity)
+        print(f"Added {quantity} x {product.get_name()} to order {order_id}.")
+
+    order.display_information()
+
+
 def main() -> None:
     print(TITLE_LINE)
     print("INVENTORY MANAGEMENT SYSTEM")
@@ -293,10 +333,12 @@ def main() -> None:
         elif option == "7":
             add_supplier(suppliers)
         elif option == "8":
+            create_order(inventory)
+        elif option == "9":
             print("\nSaving inventory...")
             save_data(suppliers, inventory)
             print(f"Inventory saved successfully to {INVENTORY_FILE}.")
-        elif option == "9":
+        elif option == "10":
             print("\nSaving inventory before exit...")
             save_data(suppliers, inventory)
             print("Inventory saved successfully.")
@@ -304,7 +346,7 @@ def main() -> None:
             print("Program terminated.")
             exit_program = True
         else:
-            print("Invalid option. Please enter a number from 1 to 9.")
+            print("Invalid option. Please enter a number from 1 to 10.")
             display_menu()
 
 if __name__ == "__main__":
