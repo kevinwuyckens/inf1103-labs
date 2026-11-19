@@ -300,17 +300,21 @@ def choose_discount() -> DiscountStrategy:
     while True:
         choice = input("Choose discount (1-4): ").strip()
 
-        if choice == "1":
-            return NoDiscount()
-        if choice == "2":
-            percentage = get_valid_positive_number("Percentage off: ")
-            return PercentageDiscount(percentage)
-        if choice == "3":
-            threshold = get_valid_positive_number("Minimum order total: ")
-            amount = get_valid_positive_number("Amount off: ")
-            return BulkDiscount(threshold, amount)
-        if choice == "4":
-            return StudentDiscount()
+        try:
+            if choice == "1":
+                return NoDiscount()
+            if choice == "2":
+                percentage = get_valid_positive_number("Percentage off: ")
+                return PercentageDiscount(percentage)
+            if choice == "3":
+                threshold = get_valid_positive_number("Minimum order total: ")
+                amount = get_valid_positive_number("Amount off: ")
+                return BulkDiscount(threshold, amount)
+            if choice == "4":
+                return StudentDiscount()
+        except ValueError as error:
+            print(f"Invalid discount: {error}")
+            continue
 
         print("Invalid input. Please enter a number from 1 to 4.")
 
