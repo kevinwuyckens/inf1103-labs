@@ -1,8 +1,7 @@
 import json
 from Supplier import Supplier
 from Product import Product
-from PhysicalProduct import PhysicalProduct
-from DigitalProduct import DigitalProduct
+from ProductFactory import ProductFactory
 from CanBeShipped import CanBeShipped
 from Inventory import Inventory
 from Order import Order
@@ -45,13 +44,13 @@ def load_data() -> tuple[list[Supplier], Inventory]:
             print(f"Unknown supplier '{item['supplier_id']}' for product {item['id']}, skipped.")
             continue
 
-        product: Product
-        if item["type"] == "physical":
-            product = PhysicalProduct(item["id"], item["name"], item["price"], item["stock"], supplier, item["weight"], item["transaction_history"])
-        elif item["type"] == "digital":
-            product = DigitalProduct(item["id"], item["name"], item["price"], item["stock"], supplier, item["download_size"], item["transaction_history"])
-        else:
-            print(f"Unknown product type '{item['type']}' for product {item['id']}, skipped.")
+        try:
+            product = ProductFactory.create(item["type"], item["id"], item["name"], item["price"], item["stock"], supplier,
+                                            weight=item.get("weight", 0.0),
+                                            download_size=item.get("download_size", 0.0),
+                                            transaction_history=item["transaction_history"])
+        except ValueError as error:
+            print(f"Product {item['id']} skipped: {error}")
             continue
 
         inventory.add_product(product)
@@ -194,13 +193,15 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
 
     supplier = get_valid_supplier(suppliers)
 
-    product: Product
+    weight = 0.0
+    download_size = 0.0
     if product_type == "physical":
         weight = get_valid_positive_number("Weight (kg): ")
-        product = PhysicalProduct(product_id, name, price, stock, supplier, weight)
     else:
         download_size = get_valid_positive_number("Download Size (MB): ")
-        product = DigitalProduct(product_id, name, price, stock, supplier, download_size)
+
+    product = ProductFactory.create(product_type, product_id, name, price, stock, supplier,
+                                    weight=weight, download_size=download_size)
 
     inventory.add_product(product)
     print("\nProduct added successfully!")
