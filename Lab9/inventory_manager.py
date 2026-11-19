@@ -10,6 +10,7 @@ from DiscountStrategy import DiscountStrategy
 from NoDiscount import NoDiscount
 from PercentageDiscount import PercentageDiscount
 from BulkDiscount import BulkDiscount
+from StudentDiscount import StudentDiscount
 
 INVENTORY_FILE = "inventory.json"
 TITLE_LINE = "=" * 40
@@ -293,9 +294,10 @@ def choose_discount() -> DiscountStrategy:
     print("1. No Discount")
     print("2. Percentage Discount")
     print("3. Bulk Discount")
+    print("4. Student Discount (5%)")
 
     while True:
-        choice = input("Choose discount (1-3): ").strip()
+        choice = input("Choose discount (1-4): ").strip()
 
         if choice == "1":
             return NoDiscount()
@@ -306,8 +308,10 @@ def choose_discount() -> DiscountStrategy:
             threshold = get_valid_positive_number("Minimum order total: ")
             amount = get_valid_positive_number("Amount off: ")
             return BulkDiscount(threshold, amount)
+        if choice == "4":
+            return StudentDiscount()
 
-        print("Invalid input. Please enter a number from 1 to 3.")
+        print("Invalid input. Please enter a number from 1 to 4.")
 
 
 def create_order(inventory: Inventory) -> None:
