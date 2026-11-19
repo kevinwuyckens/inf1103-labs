@@ -34,6 +34,9 @@ def load_data() -> tuple[list[Supplier], Inventory]:
     except FileNotFoundError:
         print(f"\n{INVENTORY_FILE} not found. Starting with an empty inventory.")
         return suppliers, inventory
+    except json.JSONDecodeError:
+        print(f"\n{INVENTORY_FILE} is not valid JSON. Starting with an empty inventory.")
+        return suppliers, inventory
 
     for item in data["suppliers"]:
         suppliers.append(Supplier(item["id"], item["name"], item["contact_email"]))
@@ -87,20 +90,16 @@ def display_menu() -> None:
     print(MENU_LINE)
 
 
-def get_valid_positive_number(prompt: str) -> float:
+def get_positive_float(prompt: str) -> float:
     while True:
-        user_input = input(prompt).strip()
-
         try:
-            number = float(user_input)
+            value = float(input(prompt))
+            if value <= 0:
+                print("Please enter a number greater than zero.")
+                continue
+            return value
         except ValueError:
-            print("Invalid input. Please enter a number.")
-            continue
-
-        if number <= 0:
-            print("Invalid input. Value must be greater than 0.")
-        else:
-            return number
+            print("Please enter a valid number, e.g. 12.50")
 
 
 def get_valid_product_type() -> str:
@@ -121,22 +120,27 @@ def get_valid_product_type() -> str:
 
 def get_valid_stock(prompt: str) -> int:
     while True:
-        user_input = input(prompt).strip()
+        try:
+            value = int(input(prompt))
 
-        if user_input.isdecimal():
-            return int(user_input)
-
-        print("Invalid input. Please enter a whole number of 0 or more.")
+            if value < 0:
+                print("Stock quantity cannot be negative.")
+                continue
+            return value
+        except ValueError:
+            print("Please enter a whole number, e.g. 10")
 
 
 def get_valid_quantity(prompt: str) -> int:
     while True:
-        user_input = input(prompt).strip()
-
-        if user_input.isdecimal() and int(user_input) > 0:
-            return int(user_input)
-
-        print("Invalid input. Please enter a whole number greater than 0.")
+        try:
+            value = int(input(prompt))
+            if value <= 0:
+                print("Please enter a quantity greater than zero.")
+                continue
+            return value
+        except ValueError:
+            print("Please enter a whole number, e.g. 2")
 
 
 def display_suppliers(suppliers: list[Supplier]) -> None:
@@ -188,7 +192,7 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
         print("Invalid input. Product name cannot be empty.")
         name = input("Product Name: ").strip()
 
-    price = get_valid_positive_number("Price: ")
+    price = get_positive_float("Price: ")
     stock = get_valid_stock("Stock Quantity: ")
 
     supplier = get_valid_supplier(suppliers)
@@ -196,12 +200,15 @@ def add_product(inventory: Inventory, suppliers: list[Supplier]) -> None:
     weight = 0.0
     download_size = 0.0
     if product_type == "physical":
-        weight = get_valid_positive_number("Weight (kg): ")
+        weight = get_positive_float("Weight (kg): ")
     else:
-        download_size = get_valid_positive_number("Download Size (MB): ")
-
-    product = ProductFactory.create(product_type, product_id, name, price, stock, supplier,
-                                    weight=weight, download_size=download_size)
+        download_size = get_positive_float("Download Size (MB): ")
+    try:
+        product = ProductFactory.create(product_type, product_id, name, price, stock, supplier,
+                                        weight=weight, download_size=download_size)
+    except ValueError as error:
+        print(f"\nProduct not added: {error}")
+        return
 
     inventory.add_product(product)
     print("\nProduct added successfully!")
@@ -304,18 +311,18 @@ def choose_discount() -> DiscountStrategy:
             if choice == "1":
                 return NoDiscount()
             if choice == "2":
-                percentage = get_valid_positive_number("Percentage off: ")
+                percentage = get_positive_float("Percentage off: ")
                 return PercentageDiscount(percentage)
             if choice == "3":
-                threshold = get_valid_positive_number("Minimum order total: ")
-                amount = get_valid_positive_number("Amount off: ")
+                threshold = get_positive_float("Minimum order total: ")
+                amount = get_positive_float("Amount off: ")
                 return BulkDiscount(threshold, amount)
             if choice == "4":
                 return StudentDiscount()
+            
         except ValueError as error:
             print(f"Invalid discount: {error}")
             continue
-
         print("Invalid input. Please enter a number from 1 to 4.")
 
 
